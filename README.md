@@ -1,1 +1,1 @@
-# COSC2673---Machine-Learning-Group-Assignment
+# COSC2673 - Machine Learning: Group Assignment
