@@ -35,7 +35,6 @@ def get_leaf_directories(data_dir):
     return leaf_directories
 
 def data_from_dir(data_dir):
-    # Create a TensorFlow dataset from the concatenated files
     data = image_dataset_from_directory(
         data_dir,
         seed=42,
@@ -46,24 +45,18 @@ def data_from_dir(data_dir):
     return data
 	
 def preprocess28(image_path):
-    # Load image using PIL
     img = Image.open(image_path)
-    
-    # Resize image to 28x28 pixels
+
     img = img.resize((28, 28))
-    
-    # Convert image to grayscale
+
     img = img.convert('L')
-    
-    # Convert image to numpy array and normalize
+
     img_array = np.array(img) 
-    
-    # Add channel dimension for TensorFlow/Keras compatibility
+
     img_array = np.expand_dims(img_array, axis=-1)
     
     return img_array
 
-# Function to count the number of original images in a directory
 def count_images(directory):
     return sum(1 for filename in os.listdir(directory) if filename.endswith('.png'))
 
@@ -98,11 +91,8 @@ def calibrate_shape_dataset(directory):
                             shutil.move(src, dst)
                     shutil.rmtree(subdir_path)
                     print(f"Deleting directory {subdir_path}")
-
-    # Define the target number of images per directory
     target_count = 5000
-    
-    # Augment images until reaching the target number of images per directory
+
     for main_dir in os.listdir(directory):
         main_path = os.path.join(directory, main_dir)
         if os.path.isdir(main_path):
@@ -111,11 +101,9 @@ def calibrate_shape_dataset(directory):
             if augmentations_needed > 0:
                 print(f"Augmenting {augmentations_needed} images in directory {main_path}")
                 augment_images(main_path, augmentations_needed)
-    
-    # Find the minimum number of images among all directories
+
     min_images = min(count_images(os.path.join(directory, subdir)) for subdir in os.listdir(directory) if os.path.isdir(os.path.join(directory, subdir)))
-    
-    # Remove excess images from directories with more images than the minimum
+
     for subdir in os.listdir(directory):
         subdir_path = os.path.join(directory, subdir)
         if os.path.isdir(subdir_path):
@@ -131,7 +119,6 @@ def calibrate_shape_dataset(directory):
     print("Directory reorganization and image augmentation completed.")
 
 def calibrate_type_dataset(directory):
-    # Move all leaf directories to the main dataset directory
     for main_dir in os.listdir(directory):
         main_path = os.path.join(directory, main_dir)
         if os.path.isdir(main_path):
@@ -143,8 +130,7 @@ def calibrate_type_dataset(directory):
                     shutil.move(sub_path, new_path)
             print(f"Deleting directory {main_path}")
             shutil.rmtree(main_path)
-    
-    # Count the number of images in each directory and find the max count
+
     image_counts = {leaf_dir: count_images(os.path.join(directory, leaf_dir)) for leaf_dir in os.listdir(directory) if os.path.isdir(os.path.join(directory,leaf_dir))}
     print("Image counts per directory:", image_counts)
     
@@ -154,7 +140,6 @@ def calibrate_type_dataset(directory):
         max_images = 0
         print("No images found in any directory.")
     
-    # Augment images in directories to ensure each has the same number of images as the directory with the most images
     for leaf_dir, count in image_counts.items():
         leaf_path = os.path.join(directory, leaf_dir)
         augmentations_needed = max_images - count
